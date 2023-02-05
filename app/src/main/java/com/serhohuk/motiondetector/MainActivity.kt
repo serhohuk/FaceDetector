@@ -3,29 +3,35 @@ package com.serhohuk.motiondetector
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cameraswitch
+import androidx.compose.material.icons.sharp.Lens
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
@@ -41,10 +47,20 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.tasks.TaskExecutors
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.common.MlKitException
+import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
+import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.serhohuk.motiondetector.ui.theme.MotionDetectorTheme
+import java.io.File
+import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (permissionGranted()) {
@@ -66,6 +82,7 @@ class MainActivity : ComponentActivity() {
     private fun initView() {
         setContent {
             MotionDetectorTheme {
+                val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -74,8 +91,24 @@ class MainActivity : ComponentActivity() {
                         var lens = remember {
                             mutableStateOf(CameraSelector.LENS_FACING_FRONT)
                         }
-                        CameraPreview(cameraLens = lens.value)
-                        Controls(onLensChange = { lens.value = switchLens(lens.value) })
+                        CameraPreview(
+                            cameraLens = lens.value,
+                            imageCapture = imageCapture
+                        )
+                        Controls(
+                            //executor = Executors.newSingleThreadExecutor(),
+                            onLensChange = { lens.value = switchLens(lens.value) },
+                            onTakePictureClick = {
+                                takePhoto(
+                                    filenameFormat = "yyyy-MM-dd-HH-mm-ss-SSS",
+                                    imageCapture = imageCapture,
+                                    outputDirectory = File(""),
+                                    executor = Executors.newSingleThreadExecutor(),
+                                    onImageCaptured = {},
+                                    onError = {}
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -114,7 +147,6 @@ class MainActivity : ComponentActivity() {
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                     )
-                    // Preview is incorrectly scaled in Compose on some devices without this
                     implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                 }
 
@@ -147,6 +179,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun CameraPreview(
         modifier: Modifier = Modifier,
+        imageCapture: ImageCapture,
         cameraLens: Int
     ) {
         val lifecycleOwner = LocalLifecycleOwner.current
@@ -157,7 +190,7 @@ class MainActivity : ComponentActivity() {
         val cameraProviderFuture = remember(sourceInfo, cameraLens) {
             ProcessCameraProvider.getInstance(context)
                 .configureCamera(
-                    previewView, lifecycleOwner, cameraLens, context,
+                    previewView, lifecycleOwner, imageCapture, cameraLens, context,
                     setSourceInfo = { sourceInfo = it },
                     onFacesDetected = { detectedFaces = it },
                 )
@@ -191,19 +224,61 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Controls(
-        onLensChange: () -> Unit
+        onLensChange: () -> Unit,
+        onTakePictureClick: () -> Unit
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 24.dp),
+                .fillMaxSize(),
             contentAlignment = Alignment.BottomCenter,
         ) {
-            Button(
-                onClick = { onLensChange() },
-                modifier = Modifier.wrapContentSize(),
-                shape = CircleShape
-            ) { Icon(Icons.Filled.Cameraswitch, contentDescription = "Switch camera") }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .padding(vertical = 20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 36.dp),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    IconButton(
+                        onClick = { onLensChange() },
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black),
+                        content = {
+                            Icon(
+                                imageVector = Icons.Filled.Cameraswitch,
+                                contentDescription = "Switch camera",
+                                modifier = Modifier.size(24.dp),
+                                tint = Color.White
+                            )
+                        })
+                }
+
+                IconButton(
+                    modifier = Modifier,
+                    onClick = {
+                        onTakePictureClick()
+                    },
+                    content = {
+                        Icon(
+                            imageVector = Icons.Sharp.Lens,
+                            contentDescription = "Take picture",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .padding(1.dp)
+                                .border(1.dp, Color.White, CircleShape)
+                        )
+                    }
+                )
+            }
         }
     }
 
@@ -261,9 +336,79 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun takePhoto(
+        filenameFormat: String,
+        imageCapture: ImageCapture,
+        outputDirectory: File,
+        executor: Executor,
+        onImageCaptured: (Uri) -> Unit,
+        onError: (ImageCaptureException) -> Unit
+    ) {
+
+        val photoFile = File(
+            outputDirectory,
+            SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        val highAccuracyOpts = FaceDetectorOptions.Builder()
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+            .enableTracking()
+            .build()
+
+        val faceDetector = FaceDetection.getClient(highAccuracyOpts);
+
+
+        imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
+            override fun onError(exception: ImageCaptureException) {
+                Log.e("kilo", "Take photo error:", exception)
+                onError(exception)
+            }
+
+            override fun onCaptureSuccess(image: ImageProxy) {
+                val start = System.currentTimeMillis()
+                val bitmap = imageProxyToBitmap(image)
+                //val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+                var mutableBitmap: Bitmap? = null
+                val inputImage =
+                    InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
+
+                faceDetector.process(inputImage)
+                    .addOnSuccessListener {
+                        val boxes = mutableListOf<FaceRect>()
+                        for (face in it) {
+                            boxes.add(
+                                FaceRect(
+                                    face.trackingId.toString(),
+                                    face.boundingBox
+                                )
+                            )
+                        }
+                        val resultBitmap = drawDetectionResult(bitmap, boxes)
+                        saveImage(resultBitmap)
+
+                    }
+                    .addOnCompleteListener {
+                        image.close()
+                    }
+                super.onCaptureSuccess(image)
+            }
+        })
+    }
+
+    private fun imageProxyToBitmap(image: ImageProxy): Bitmap {
+        val planeProxy = image.planes[0]
+        val buffer: ByteBuffer = planeProxy.buffer
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+
     fun ListenableFuture<ProcessCameraProvider>.configureCamera(
         previewView: PreviewView,
         lifecycleOwner: LifecycleOwner,
+        imageCapture: ImageCapture,
         cameraLens: Int,
         context: Context,
         setSourceInfo: (SourceInfo) -> Unit,
@@ -284,6 +429,7 @@ class MainActivity : ComponentActivity() {
                 get().apply {
                     unbindAll()
                     bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+                    bindToLifecycle(lifecycleOwner, cameraSelector, imageCapture)
                     bindToLifecycle(lifecycleOwner, cameraSelector, analysis)
                 }
             } catch (exc: Exception) {
@@ -320,6 +466,18 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Greeting(name: String) {
         Text(text = "Hello $name!")
+    }
+
+    @Preview
+    @Composable
+    fun ControlsPreview() {
+        MotionDetectorTheme() {
+            Surface(color = Color.Gray) {
+                Controls(
+                    onLensChange = { },
+                    onTakePictureClick = {})
+            }
+        }
     }
 
     @Preview(showBackground = true)
