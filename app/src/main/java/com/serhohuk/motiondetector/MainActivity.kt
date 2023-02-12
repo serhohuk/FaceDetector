@@ -51,7 +51,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.serhohuk.motiondetector.ui.theme.MotionDetectorTheme
+import com.serhohuk.motiondetector.ui.theme.FaceDetectionTheme
 import java.io.File
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
 
     private fun initView() {
         setContent {
-            MotionDetectorTheme {
+            FaceDetectionTheme {
                 val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -471,7 +471,7 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun ControlsPreview() {
-        MotionDetectorTheme() {
+        FaceDetectionTheme() {
             Surface(color = Color.Gray) {
                 Controls(
                     onLensChange = { },
@@ -483,7 +483,7 @@ class MainActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun DefaultPreview() {
-        MotionDetectorTheme {
+        FaceDetectionTheme {
             Greeting("Android")
         }
     }

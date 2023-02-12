@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -49,7 +48,7 @@ import com.serhohuk.motiondetector.FaceDetectorProcessor
 import com.serhohuk.motiondetector.FaceRect
 import com.serhohuk.motiondetector.drawDetectionResult
 import com.serhohuk.motiondetector.saveImage
-import com.serhohuk.motiondetector.ui.theme.MotionDetectorTheme
+import com.serhohuk.motiondetector.ui.theme.FaceDetectionTheme
 import java.io.File
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -66,7 +65,7 @@ class CameraDetectionFragment : Fragment() {
     ) = ComposeView(requireContext()).apply {
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
-            MotionDetectorTheme {
+            FaceDetectionTheme {
                 val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -437,7 +436,7 @@ class CameraDetectionFragment : Fragment() {
     @Preview
     @Composable
     fun ControlsPreview() {
-        MotionDetectorTheme() {
+        FaceDetectionTheme() {
             Surface(color = Color.Gray) {
                 Controls(
                     onLensChange = { },
