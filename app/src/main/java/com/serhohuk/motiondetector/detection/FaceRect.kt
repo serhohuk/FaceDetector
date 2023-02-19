@@ -1,4 +1,4 @@
-package com.serhohuk.motiondetector
+package com.serhohuk.motiondetector.detection
 
 import android.graphics.Rect
 import android.graphics.RectF

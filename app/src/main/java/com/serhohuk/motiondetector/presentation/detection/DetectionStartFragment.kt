@@ -52,7 +52,13 @@ class DetectionStartFragment : Fragment() {
                         }
                     },
                     onGalleryButtonClick = {
-
+                        if (permissionGranted()) {
+                            router.navigateToGalleryRecognitionScreen(
+                                requireActivity().supportFragmentManager
+                            )
+                        } else {
+                            requestPermission()
+                        }
                 })
             }
         }

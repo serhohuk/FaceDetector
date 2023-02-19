@@ -1,4 +1,4 @@
-package com.serhohuk.motiondetector
+package com.serhohuk.motiondetector.extensions
 
 import android.app.Activity
 import android.content.ContentValues
@@ -6,6 +6,8 @@ import android.graphics.*
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import com.serhohuk.motiondetector.detection.FaceRect
+import com.serhohuk.motiondetector.R
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream

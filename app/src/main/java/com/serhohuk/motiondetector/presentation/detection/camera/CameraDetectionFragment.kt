@@ -37,6 +37,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.tasks.TaskExecutors
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.common.MlKitException
@@ -44,15 +45,15 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.serhohuk.motiondetector.FaceDetectorProcessor
-import com.serhohuk.motiondetector.FaceRect
-import com.serhohuk.motiondetector.drawDetectionResult
-import com.serhohuk.motiondetector.saveImage
+import com.serhohuk.motiondetector.detection.FaceDetectorProcessor
+import com.serhohuk.motiondetector.detection.FaceRect
+import com.serhohuk.motiondetector.extensions.drawDetectionResult
+import com.serhohuk.motiondetector.extensions.saveImage
 import com.serhohuk.motiondetector.ui.theme.FaceDetectionTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.ByteBuffer
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -80,7 +81,6 @@ class CameraDetectionFragment : Fragment() {
                             imageCapture = imageCapture
                         )
                         Controls(
-                            //executor = Executors.newSingleThreadExecutor(),
                             onLensChange = { lens.value = switchLens(lens.value) },
                             onTakePictureClick = {
                                 takePhoto(
@@ -205,7 +205,7 @@ class CameraDetectionFragment : Fragment() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(Color.Black.copy(alpha = 0.5f))
                     .padding(vertical = 20.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -218,21 +218,21 @@ class CameraDetectionFragment : Fragment() {
                     IconButton(
                         onClick = { onLensChange() },
                         modifier = Modifier
-                            .size(50.dp)
+                            .size(42.dp)
                             .clip(CircleShape)
                             .background(Color.Black),
                         content = {
                             Icon(
                                 imageVector = Icons.Filled.Cameraswitch,
                                 contentDescription = "Switch camera",
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(20.dp),
                                 tint = Color.White
                             )
                         })
                 }
 
                 IconButton(
-                    modifier = Modifier,
+                    modifier = Modifier.size(60.dp),
                     onClick = {
                         onTakePictureClick()
                     },
@@ -242,7 +242,7 @@ class CameraDetectionFragment : Fragment() {
                             contentDescription = "Take picture",
                             tint = Color.White,
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(60.dp)
                                 .padding(1.dp)
                                 .border(1.dp, Color.White, CircleShape)
                         )
@@ -315,13 +315,6 @@ class CameraDetectionFragment : Fragment() {
         onError: (ImageCaptureException) -> Unit
     ) {
 
-        val photoFile = File(
-            outputDirectory,
-            SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
-        )
-
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
-
         val highAccuracyOpts = FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
             .enableTracking()
@@ -330,17 +323,14 @@ class CameraDetectionFragment : Fragment() {
         val faceDetector = FaceDetection.getClient(highAccuracyOpts);
 
 
-        imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
+        imageCapture.takePicture(executor,  object : ImageCapture.OnImageCapturedCallback() {
             override fun onError(exception: ImageCaptureException) {
                 Log.e("kilo", "Take photo error:", exception)
                 onError(exception)
             }
 
             override fun onCaptureSuccess(image: ImageProxy) {
-                val start = System.currentTimeMillis()
                 val bitmap = imageProxyToBitmap(image)
-                //val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-                var mutableBitmap: Bitmap? = null
                 val inputImage =
                     InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
 
@@ -355,8 +345,10 @@ class CameraDetectionFragment : Fragment() {
                                 )
                             )
                         }
-                        val resultBitmap = requireActivity().drawDetectionResult(bitmap, boxes)
-                        requireActivity().saveImage(resultBitmap)
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            val resultBitmap = requireActivity().drawDetectionResult(bitmap, boxes)
+                            requireActivity().saveImage(resultBitmap)
+                        }
 
                     }
                     .addOnCompleteListener {
