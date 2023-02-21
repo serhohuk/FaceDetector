@@ -19,10 +19,12 @@ import androidx.core.view.ViewCompat
 
 private val DarkColorScheme = AppColors(
     colors = darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80,
-        background = Color.Black
+        primary = Color(0xFF005b9f),
+        secondary = Color(0xFFc9bc1f),
+        tertiary = Color(0xFF33A5FF),
+        background = Color.Black,
+        onBackground = Color.White,
+        surface = Color(0xFF2B2A2A)
     ),
     textPrimary = Color.White,
     warningColor = Color.Red
@@ -30,20 +32,12 @@ private val DarkColorScheme = AppColors(
 
 private val LightColorScheme = AppColors(
     colors = lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40,
-        background = Color.White
-
-        /* Other default colors to override
-        background = Color(0xFFFFFBFE),
-        surface = Color(0xFFFFFBFE),
-        onPrimary = Color.White,
-        onSecondary = Color.White,
-        onTertiary = Color.White,
-        onBackground = Color(0xFF1C1B1F),
-        onSurface = Color(0xFF1C1B1F),
-        */
+        primary = Color(0xFF0288d1),
+        secondary = Color(0xFFffee58),
+        tertiary = Color(0xFF5eb8ff),
+        background = Color.White,
+        onBackground = Color.Black,
+        surface = Color(0xFFDBDBDB)
     ),
     textPrimary = Color.Black,
     warningColor = Color.Red
