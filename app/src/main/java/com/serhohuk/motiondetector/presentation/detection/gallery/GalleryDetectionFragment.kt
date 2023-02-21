@@ -1,6 +1,8 @@
 package com.serhohuk.motiondetector.presentation.detection.gallery
 
+import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.Bundle
@@ -29,15 +31,17 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import coil.compose.rememberAsyncImagePainter
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.serhohuk.motiondetector.detection.FaceRect
 import com.serhohuk.motiondetector.R
+import com.serhohuk.motiondetector.detection.FaceRect
 import com.serhohuk.motiondetector.extensions.drawDetectionResult
+import com.serhohuk.motiondetector.extensions.saveImage
 import com.serhohuk.motiondetector.ui.theme.FaceDetectionTheme
 import com.serhohuk.motiondetector.ui.theme.appColors
 import com.serhohuk.motiondetector.ui.theme.appShapes
@@ -46,10 +50,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.internal.closeQuietly
-import java.io.BufferedOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.OutputStream
+import java.io.*
 
 
 @AndroidEntryPoint
@@ -100,13 +101,11 @@ class GalleryDetectionFragment : Fragment() {
                             withContext(Dispatchers.Main) {
                                 viewModel.setPhotoSelected(file.path)
                                 viewModel.imagePath = file.path
-
                             }
                         }
 
                     }
                     .addOnCompleteListener{
-                        faceDetector.close()
                         faceDetector.closeQuietly()
                     }
             } else {
@@ -130,11 +129,35 @@ class GalleryDetectionFragment : Fragment() {
                 },
                 onBackClick = {
                     requireActivity().supportFragmentManager.popBackStack()
+                },
+                onSaveClick = {
+                    val bitmap = BitmapFactory.decodeFile(viewModel.imagePath)
+                    requireActivity().saveImage(bitmap)
+                },
+                onShareClick = {
+                    startFileShareIntent(viewModel.imagePath)
                 }
             )
         }
     }
 
+
+    private fun startFileShareIntent(filePath: String) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "image/*"
+            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            putExtra(
+                Intent.EXTRA_SUBJECT,
+                getString(R.string.sharing_file, getString(R.string.app_name))
+            )
+            val fileURI = FileProvider.getUriForFile(
+                requireContext(), requireContext().packageName + ".provider",
+                File(filePath)
+            )
+            putExtra(Intent.EXTRA_STREAM, fileURI)
+        }
+        startActivity(shareIntent)
+    }
 
 }
 
@@ -143,6 +166,8 @@ class GalleryDetectionFragment : Fragment() {
 private fun GalleryDetectionScreen(
     uiState: GalleryDetectionUIState,
     onSelectImageClick: () -> Unit,
+    onSaveClick: () -> Unit,
+    onShareClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -182,7 +207,10 @@ private fun GalleryDetectionScreen(
                             .fillMaxWidth()
                             .height(300.dp)
                             .padding(horizontal = 16.dp)
-                            .background(MaterialTheme.appColors.colors.primary, MaterialTheme.appShapes.imageShape)
+                            .background(
+                                MaterialTheme.appColors.colors.primary,
+                                MaterialTheme.appShapes.imageShape
+                            )
                             .clip(MaterialTheme.appShapes.imageShape)
                             .clickable { onSelectImageClick() },
                         verticalArrangement = Arrangement.Center,
@@ -208,7 +236,10 @@ private fun GalleryDetectionScreen(
                             .fillMaxWidth()
                             .height(300.dp)
                             .padding(horizontal = 16.dp)
-                            .background(MaterialTheme.appColors.colors.primary, MaterialTheme.appShapes.imageShape)
+                            .background(
+                                MaterialTheme.appColors.colors.primary,
+                                MaterialTheme.appShapes.imageShape
+                            )
                             .clip(MaterialTheme.appShapes.imageShape)
                             .clickable { onSelectImageClick() },
                         contentAlignment = Alignment.Center
@@ -222,7 +253,10 @@ private fun GalleryDetectionScreen(
                             .fillMaxWidth()
                             .height(300.dp)
                             .padding(horizontal = 16.dp)
-                            .background(MaterialTheme.appColors.colors.primary, MaterialTheme.appShapes.imageShape)
+                            .background(
+                                MaterialTheme.appColors.colors.primary,
+                                MaterialTheme.appShapes.imageShape
+                            )
                             .clip(MaterialTheme.appShapes.imageShape),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -233,6 +267,27 @@ private fun GalleryDetectionScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                         )
+                    }
+                    Spacer(Modifier.height(32.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(onClick = { onSaveClick() }) {
+                            Text(
+                                text = stringResource(id = R.string.save_image),
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                        Spacer(Modifier.width(16.dp))
+                        Button(onClick = { onShareClick() }) {
+                            Text(
+                                text = stringResource(id = R.string.share_image),
+                                color = Color.White,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }
@@ -247,7 +302,9 @@ fun GalleryDetectionScreenPreview() {
         GalleryDetectionScreen(
             uiState = GalleryDetectionUIState.Success(""),
             onBackClick = {},
-            onSelectImageClick = {}
+            onSelectImageClick = {},
+            onSaveClick = {},
+            onShareClick = {}
         )
     }
 }

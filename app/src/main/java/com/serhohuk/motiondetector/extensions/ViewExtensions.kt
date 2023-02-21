@@ -56,30 +56,28 @@ fun Activity.drawDetectionResult(
 }
 
 fun Activity.saveImage(bitmap: Bitmap) {
-    var fos: OutputStream? = null
+    val fos: OutputStream?
     val name = "IMG_" + System.currentTimeMillis()
-    val IMAGES_FOLDER_NAME = getString(R.string.app_name)
+    val folderName = getString(R.string.app_name)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-            put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/$IMAGES_FOLDER_NAME")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "DCIM/$folderName")
         }
         val imageUri =
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
         fos = contentResolver.openOutputStream(imageUri!!)
     } else {
-        val imagesDir = Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_DCIM
-        ).toString() + File.separator + IMAGES_FOLDER_NAME
+        val imagesDir = Environment.getExternalStorageDirectory().toString() + File.separator + folderName
 
         val file = File(imagesDir)
         if (!file.exists()) {
             file.mkdir()
         }
 
-        val image = File(imagesDir, "$name.png")
+        val image = File(file, "$name.png")
         fos = FileOutputStream(image)
     }
 
