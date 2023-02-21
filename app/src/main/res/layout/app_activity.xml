@@ -11,7 +11,7 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.serhohuk.motiondetector.presentation.main.MainFragment"
+        android:name="com.serhohuk.facedetector.presentation.main.MainFragment"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </FrameLayout>

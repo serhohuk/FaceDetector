@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.serhohuk.motiondetector'
+    namespace 'com.serhohuk.facedetector'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.serhohuk.motiondetector"
+        applicationId "com.serhohuk.facedetector"
         minSdk 24
         targetSdk 33
         versionCode 1
