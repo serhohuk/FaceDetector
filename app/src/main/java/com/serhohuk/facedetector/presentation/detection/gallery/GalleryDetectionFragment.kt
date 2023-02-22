@@ -41,7 +41,9 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.serhohuk.facedetector.R
 import com.serhohuk.facedetector.detection.FaceRect
 import com.serhohuk.facedetector.extensions.drawDetectionResult
+import com.serhohuk.facedetector.extensions.round
 import com.serhohuk.facedetector.extensions.saveImage
+import com.serhohuk.facedetector.extensions.scaleBitmap
 import com.serhohuk.facedetector.ui.theme.FaceDetectionTheme
 import com.serhohuk.facedetector.ui.theme.appColors
 import com.serhohuk.facedetector.ui.theme.appShapes
@@ -79,20 +81,24 @@ class GalleryDetectionFragment : Fragment() {
                     val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
                     ImageDecoder.decodeBitmap(source)
                 }
+                val scaledBitmap = requireActivity().scaleBitmap(bitmap)
 
-                faceDetector.process(bitmap, 0)
+                faceDetector.process(scaledBitmap, 0)
                     .addOnSuccessListener {
                         val boxes = mutableListOf<FaceRect>()
                         for (face in it) {
                             boxes.add(
                                 FaceRect(
-                                    face.smilingProbability.toString(),
+                                    face.trackingId.toString(),
+                                    face.smilingProbability?.round(2).toString(),
+                                    face.leftEyeOpenProbability?.round(2).toString(),
+                                    face.leftEyeOpenProbability?.round(2).toString(),
                                     face.boundingBox
                                 )
                             )
                         }
                         lifecycleScope.launch(Dispatchers.IO) {
-                            val resultBitmap = requireActivity().drawDetectionResult(bitmap, boxes)
+                            val resultBitmap = requireActivity().drawDetectionResult(scaledBitmap, boxes)
                             val file =
                                 File(requireContext().externalCacheDir.toString() + File.separator + "IMG_${System.currentTimeMillis()}.jpg")
                             val os: OutputStream = BufferedOutputStream(FileOutputStream(file))
@@ -240,8 +246,7 @@ private fun GalleryDetectionScreen(
                                 MaterialTheme.appColors.colors.primary,
                                 MaterialTheme.appShapes.imageShape
                             )
-                            .clip(MaterialTheme.appShapes.imageShape)
-                            .clickable { onSelectImageClick() },
+                            .clip(MaterialTheme.appShapes.imageShape),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator()

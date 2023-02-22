@@ -48,6 +48,7 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.serhohuk.facedetector.detection.FaceDetectorProcessor
 import com.serhohuk.facedetector.detection.FaceRect
 import com.serhohuk.facedetector.extensions.drawDetectionResult
+import com.serhohuk.facedetector.extensions.round
 import com.serhohuk.facedetector.extensions.saveImage
 import com.serhohuk.facedetector.ui.theme.FaceDetectionTheme
 import kotlinx.coroutines.Dispatchers
@@ -314,14 +315,14 @@ class CameraDetectionFragment : Fragment() {
         onImageCaptured: (Uri) -> Unit,
         onError: (ImageCaptureException) -> Unit
     ) {
-
         val highAccuracyOpts = FaceDetectorOptions.Builder()
-            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-            .enableTracking()
+            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+            .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+            .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+            .setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
             .build()
 
-        val faceDetector = FaceDetection.getClient(highAccuracyOpts);
-
+        val faceDetector = FaceDetection.getClient(highAccuracyOpts)
 
         imageCapture.takePicture(executor,  object : ImageCapture.OnImageCapturedCallback() {
             override fun onError(exception: ImageCaptureException) {
@@ -341,6 +342,9 @@ class CameraDetectionFragment : Fragment() {
                             boxes.add(
                                 FaceRect(
                                     face.trackingId.toString(),
+                                    face.smilingProbability?.round(2).toString(),
+                                    face.leftEyeOpenProbability?.round(2).toString(),
+                                    face.leftEyeOpenProbability?.round(2).toString(),
                                     face.boundingBox
                                 )
                             )

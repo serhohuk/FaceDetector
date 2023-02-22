@@ -5,7 +5,7 @@ import android.view.KeyEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.serhohuk.facedetector.R
-import com.serhohuk.facedetector.isFragmentExistsAndVisible
+import com.serhohuk.facedetector.extensions.isFragmentExistsAndVisible
 import com.serhohuk.facedetector.presentation.detection.camera.CameraDetectionFragment
 import dagger.hilt.android.AndroidEntryPoint
 
