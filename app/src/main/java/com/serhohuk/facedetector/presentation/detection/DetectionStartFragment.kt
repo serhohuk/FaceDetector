@@ -35,12 +35,14 @@ import com.serhohuk.facedetector.R
 import com.serhohuk.facedetector.ui.theme.FaceDetectionTheme
 import com.serhohuk.facedetector.ui.theme.appColors
 import com.serhohuk.facedetector.ui.theme.appShapes
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class DetectionStartFragment : Fragment() {
 
-    private val router by lazy {
-        AppRouter()
-    }
+    @Inject
+    lateinit var router : AppRouter
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
+import dagger.hilt.android.internal.managers.ViewComponentManager
 
 private val DarkColorScheme = AppColors(
     colors = darkColorScheme(
@@ -24,7 +25,8 @@ private val DarkColorScheme = AppColors(
         tertiary = Color(0xFF33A5FF),
         background = Color.Black,
         onBackground = Color.White,
-        surface = Color(0xFF2B2A2A)
+        surface = Color(0xFF2B2A2A),
+        onSurface = Color.White
     ),
     textPrimary = Color.White,
     warningColor = Color.Red
@@ -37,7 +39,8 @@ private val LightColorScheme = AppColors(
         tertiary = Color(0xFF5eb8ff),
         background = Color.White,
         onBackground = Color.Black,
-        surface = Color(0xFFDBDBDB)
+        surface = Color(0xFFDBDBDB),
+        onSurface = Color.Black
     ),
     textPrimary = Color.Black,
     warningColor = Color.Red
@@ -64,13 +67,13 @@ fun FaceDetectionTheme(
         darkTheme -> DarkColorScheme.colors
         else -> LightColorScheme.colors
     }
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
-            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
-        }
-    }
+//    val view = LocalView.current
+//    if (!view.isInEditMode) {
+//        SideEffect {
+//            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
+//            ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
+//        }
+//    }
 
     MaterialTheme(
         colorScheme = colorScheme,

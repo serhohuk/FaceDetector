@@ -2,6 +2,7 @@
 <resources>
     <color name="primary">#FF0288d1</color>
     <color name="primaryDark">#FF5eb8ff</color>
+    <color name="primary_bottom">#6DCBFF</color>
     <color name="secondary">#FFffee58</color>
     <color name="surface">#FFDBDBDB</color>
 </resources>

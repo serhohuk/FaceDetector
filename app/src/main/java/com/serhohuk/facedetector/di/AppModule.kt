@@ -3,6 +3,7 @@ package com.serhohuk.facedetector.di
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.serhohuk.facedetector.AppRouter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,5 +27,11 @@ class AppModule {
     @Singleton
     fun providesFaceDetector(highAccuracyOpts: FaceDetectorOptions): FaceDetector {
         return FaceDetection.getClient(highAccuracyOpts)
+    }
+
+    @Provides
+    @Singleton
+    fun providesAppRouter() : AppRouter {
+        return AppRouter()
     }
 }

@@ -6,4 +6,5 @@
     <string name="sharing_file">Sharing file from the %s</string>
     <string name="camera">Camera</string>
     <string name="select_photo">Select photo</string>
+    <string name="select_image">Select Image</string>
 </resources>

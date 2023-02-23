@@ -18,10 +18,8 @@ class GalleryDetectionViewModel @Inject constructor(
 
     var imagePath = ""
 
-
-
-    fun setPhotoSelected(uri: String) {
-        _uiState.value = GalleryDetectionUIState.Success(uri)
+    fun setPhotoSelected(uri: String, saved: Boolean) {
+        _uiState.value = GalleryDetectionUIState.Success(uri, saved)
     }
 
     fun setIsLoading() {
