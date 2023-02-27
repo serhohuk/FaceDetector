@@ -181,7 +181,7 @@ private fun GalleryDetectionScreen(
     onBackClick: () -> Unit
 ) {
     Scaffold(
-        contentColor = MaterialTheme.appColors.background
+        containerColor = MaterialTheme.appColors.background
     ) {
         Column(
             Modifier
@@ -192,7 +192,7 @@ private fun GalleryDetectionScreen(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.appColors.surface)
+                    .background(MaterialTheme.appColors.colors.onBackground)
                     .height(52.dp)
                     .padding(start = 16.dp),
                 contentAlignment = Alignment.CenterStart
@@ -201,7 +201,7 @@ private fun GalleryDetectionScreen(
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = null,
-                        tint = MaterialTheme.appColors.colors.onSurface
+                        tint = Color.White
                     )
                 }
                 Text(
@@ -209,7 +209,7 @@ private fun GalleryDetectionScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 48.dp),
                     text = stringResource(id = R.string.gallery_detection),
-                    color = MaterialTheme.appColors.textPrimary,
+                    color = Color.White,
                     style = MaterialTheme.typography.titleMedium
                 )
             }

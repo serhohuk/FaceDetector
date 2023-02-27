@@ -137,14 +137,14 @@ fun DetectionStartScreen(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.appColors.surface)
+                    .background(MaterialTheme.appColors.colors.onBackground)
                     .height(52.dp)
                     .padding(start = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = stringResource(id = R.string.app_name),
-                    color = MaterialTheme.appColors.textPrimary,
+                    color = Color.White,
                     style = MaterialTheme.typography.titleMedium
                 )
             }

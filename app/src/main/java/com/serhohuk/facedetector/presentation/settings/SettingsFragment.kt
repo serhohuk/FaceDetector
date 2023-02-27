@@ -9,9 +9,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Colorize
-import androidx.compose.material.icons.filled.LineWeight
-import androidx.compose.material.icons.filled.Sick
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -19,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,10 +28,12 @@ import androidx.fragment.app.viewModels
 import com.alorma.compose.settings.storage.base.rememberBooleanSettingState
 import com.alorma.compose.settings.ui.SettingsMenuLink
 import com.alorma.compose.settings.ui.SettingsSwitch
+import com.serhohuk.facedetector.BuildConfig
 import com.serhohuk.facedetector.R
 import com.serhohuk.facedetector.ui.ThicknessDialog
 import com.serhohuk.facedetector.ui.theme.FaceDetectionTheme
 import com.serhohuk.facedetector.ui.theme.appColors
+import com.serhohuk.facedetector.utils.PRIVACY_POLICY
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.color.ColorPalette
 import com.vanpra.composematerialdialogs.color.colorChooser
@@ -118,6 +119,8 @@ fun SettingsScreen(
 
     val dialogState = rememberMaterialDialogState()
 
+    val uriHandler = LocalUriHandler.current
+
     Scaffold(
         contentColor = MaterialTheme.appColors.background
     ) {
@@ -131,14 +134,14 @@ fun SettingsScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.appColors.surface)
+                        .background(MaterialTheme.appColors.colors.onBackground)
                         .height(52.dp)
                         .padding(start = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = stringResource(id = R.string.setings),
-                        color = MaterialTheme.appColors.textPrimary,
+                        color = Color.White,
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -185,8 +188,8 @@ fun SettingsScreen(
                             contentDescription = "LineWeight"
                         )
                     },
-                    title = { Text(text = "Text detection") },
-                    subtitle = { Text(text = "size") },
+                    title = { Text(text = "Text Detection") },
+                    subtitle = { Text(text = "Size") },
                     onClick = {
                         textSizeDialogOpened = true
                     },
@@ -200,7 +203,7 @@ fun SettingsScreen(
                         )
                     },
                     title = { Text(text = "Text Detection") },
-                    subtitle = { Text(text = "color") },
+                    subtitle = { Text(text = "Color") },
                     onClick = {
                         textColorDialogOpened = true
                         dialogState.show()
@@ -215,11 +218,35 @@ fun SettingsScreen(
                         )
                     },
                     title = { Text(text = "Frame Detection") },
-                    subtitle = { Text(text = "color") },
+                    subtitle = { Text(text = "Color") },
                     onClick = {
                         frameColorDialogOpened = true
                         dialogState.show()
                     },
+                )
+                Divider()
+                SettingsMenuLink(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Policy,
+                            contentDescription = "Policy"
+                        )
+                    },
+                    title = { Text(text = "Privacy policy") },
+                    onClick = {
+                        uriHandler.openUri(PRIVACY_POLICY)
+                    },
+                )
+                Divider()
+                SettingsMenuLink(
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = "Info"
+                        )
+                    },
+                    title = { Text(text = "App version: ${BuildConfig.VERSION_NAME}") },
+                    onClick = {}
                 )
                 Divider()
             }
