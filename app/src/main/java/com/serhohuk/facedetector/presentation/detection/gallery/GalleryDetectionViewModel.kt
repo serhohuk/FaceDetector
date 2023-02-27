@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.mlkit.vision.face.FaceDetector
+import com.serhohuk.facedetector.system.PreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class GalleryDetectionViewModel @Inject constructor(
-    private val faceDetector: FaceDetector
+    private val faceDetector: FaceDetector,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableLiveData<GalleryDetectionUIState>()
@@ -25,5 +27,7 @@ class GalleryDetectionViewModel @Inject constructor(
     fun setIsLoading() {
         _uiState.value = GalleryDetectionUIState.Loading
     }
+
+    fun getAppSettings() = preferencesManager.settings
 
 }

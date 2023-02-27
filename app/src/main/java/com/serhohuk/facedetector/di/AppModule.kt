@@ -1,12 +1,15 @@
 package com.serhohuk.facedetector.di
 
+import android.content.Context
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.serhohuk.facedetector.AppRouter
+import com.serhohuk.facedetector.system.PreferencesManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -34,4 +37,11 @@ class AppModule {
     fun providesAppRouter() : AppRouter {
         return AppRouter()
     }
+
+    @Provides
+    @Singleton
+    fun providesPreferencesManager(@ApplicationContext context: Context) : PreferencesManager {
+        return PreferencesManager(context)
+    }
+
 }

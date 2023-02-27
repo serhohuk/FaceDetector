@@ -6,8 +6,11 @@ import android.graphics.*
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import com.serhohuk.facedetector.detection.FaceRect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.serhohuk.facedetector.R
+import com.serhohuk.facedetector.detection.FaceRect
+import com.serhohuk.facedetector.system.AppSettings
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -15,11 +18,12 @@ import kotlin.math.sqrt
 
 fun Activity.drawDetectionResult(
     bitmap: Bitmap,
-    detectionResults: List<FaceRect>
+    detectionResults: List<FaceRect>,
+    appSettings: AppSettings
 ): Bitmap {
     val outputBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
     val canvas = Canvas(outputBitmap)
-    val relation =  sqrt((canvas.width * canvas.height).toDouble()) / 450
+    val relation = sqrt((canvas.width * canvas.height).toDouble()) / 450
 
     val paint = Paint().apply {
         textAlign = Paint.Align.LEFT
@@ -27,8 +31,8 @@ fun Activity.drawDetectionResult(
     }
     for (faceRect in detectionResults) {
         paint.apply {
-            color = Color.RED
-            strokeWidth = (8 * relation).toFloat()
+            color = Color(appSettings.frameColor).toArgb()
+            strokeWidth = (appSettings.frameThickness * relation).toFloat()
             style = Paint.Style.STROKE
         }
         canvas.drawRect(faceRect.rect, paint)
@@ -36,12 +40,17 @@ fun Activity.drawDetectionResult(
 
         paint.apply {
             style = Paint.Style.FILL_AND_STROKE
-            color = Color.YELLOW
+            color = Color(appSettings.textColor).toArgb()
             strokeWidth = (1 * relation).toFloat()
             typeface = Typeface.DEFAULT
 
-            textSize = (14 * relation).toFloat()
-            getTextBounds("l: ${faceRect.leftEyeOpenProbability} r: ${faceRect.rightEyeOpenProbability}", 0, faceRect.text.length, tagSize)
+            textSize = (appSettings.textSize * relation).toFloat()
+            getTextBounds(
+                "l: ${faceRect.leftEyeOpenProbability} r: ${faceRect.rightEyeOpenProbability}",
+                0,
+                faceRect.text.length,
+                tagSize
+            )
         }
         val fontSize = paint.textSize * faceRect.rect.width() / tagSize.width()
 
@@ -51,35 +60,42 @@ fun Activity.drawDetectionResult(
 
         var margin: Float = (faceRect.rect.width() - tagSize.width()) / 2.0f
         if (margin < 0f) margin = 0f
-        canvas.drawText(
-            "l: ${faceRect.leftEyeOpenProbability} r: ${faceRect.rightEyeOpenProbability}", faceRect.rect.left.toFloat(),
-            (faceRect.rect.top + tagSize.height() - (20 * relation).toFloat()), paint
-        )
+        if (appSettings.withEyeOpen) {
+            canvas.drawText(
+                "l: ${faceRect.leftEyeOpenProbability} r: ${faceRect.rightEyeOpenProbability}",
+                faceRect.rect.left.toFloat(),
+                (faceRect.rect.top + tagSize.height() - (20 * relation).toFloat()),
+                paint
+            )
+        }
         paint.apply {
             style = Paint.Style.FILL_AND_STROKE
-            color = Color.YELLOW
+            color = Color(appSettings.textColor).toArgb()
             strokeWidth = (1 * relation).toFloat()
 
-            textSize = (14 * relation).toFloat()
+            textSize = (appSettings.textSize * relation).toFloat()
             getTextBounds("smile: ${faceRect.smileProbability}", 0, faceRect.text.length, tagSize)
         }
-        canvas.drawText(
-            "smile: ${faceRect.smileProbability}", faceRect.rect.left.toFloat(),
-            (faceRect.rect.bottom + tagSize.height() + (6 * relation).toFloat()), paint
-        )
+        if (appSettings.withSmileProbability) {
+            canvas.drawText(
+                "smile: ${faceRect.smileProbability}", faceRect.rect.left.toFloat(),
+                (faceRect.rect.bottom + tagSize.height() + (6 * relation).toFloat()), paint
+            )
+        }
     }
     return outputBitmap
 }
 
 fun Activity.scaleBitmap(bitmap: Bitmap): Bitmap {
     val desiredHeight = 1280
-    return if(bitmap.height > desiredHeight) {
+    return if (bitmap.height > desiredHeight) {
         bitmap
     } else {
         val scale = desiredHeight.toFloat() / bitmap.height.toFloat()
         val matrix = Matrix()
         matrix.postScale(scale, scale)
-        val scaledBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val scaledBitmap =
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
         scaledBitmap
     }
 }
@@ -99,7 +115,8 @@ fun Activity.saveImage(bitmap: Bitmap) {
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
         fos = contentResolver.openOutputStream(imageUri!!)
     } else {
-        val imagesDir = Environment.getExternalStorageDirectory().toString() + File.separator + folderName
+        val imagesDir =
+            Environment.getExternalStorageDirectory().toString() + File.separator + folderName
 
         val file = File(imagesDir)
         if (!file.exists()) {

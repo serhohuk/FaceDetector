@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Face Detector</string>
     <string name="gallery_detection">Gallery detection</string>
+    <string name="setings">Settings</string>
     <string name="save_image">Save Image</string>
     <string name="share_image">Share Image</string>
     <string name="sharing_file">Sharing file from the %s</string>

@@ -1,22 +1,12 @@
 package com.serhohuk.facedetector.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.ViewCompat
-import dagger.hilt.android.internal.managers.ViewComponentManager
 
 private val DarkColorScheme = AppColors(
     colors = darkColorScheme(
@@ -25,7 +15,7 @@ private val DarkColorScheme = AppColors(
         tertiary = Color(0xFF33A5FF),
         background = Color.Black,
         onBackground = Color.White,
-        surface = Color(0xFF2B2A2A),
+        surface = Color.Black,
         onSurface = Color.White
     ),
     textPrimary = Color.White,
@@ -39,8 +29,10 @@ private val LightColorScheme = AppColors(
         tertiary = Color(0xFF5eb8ff),
         background = Color.White,
         onBackground = Color.Black,
-        surface = Color(0xFFDBDBDB),
-        onSurface = Color.Black
+        surface = Color.White,
+        onSurface = Color.Black,
+        inverseSurface = Color(0xFFDBDBDB),
+        surfaceVariant = Color(0xFFFFF9C7),
     ),
     textPrimary = Color.Black,
     warningColor = Color.Red
@@ -49,7 +41,7 @@ private val LightColorScheme = AppColors(
 val MaterialTheme.appColors: AppColors
     @Composable
     @ReadOnlyComposable
-    get() = if (isSystemInDarkTheme()) LightColorScheme else DarkColorScheme
+    get() = if (isSystemInDarkTheme()) DarkColorScheme else LightColorScheme
 
 
 @Composable

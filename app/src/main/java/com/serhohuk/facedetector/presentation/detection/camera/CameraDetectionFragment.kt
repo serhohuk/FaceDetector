@@ -50,6 +50,7 @@ import com.serhohuk.facedetector.detection.FaceRect
 import com.serhohuk.facedetector.extensions.drawDetectionResult
 import com.serhohuk.facedetector.extensions.round
 import com.serhohuk.facedetector.extensions.saveImage
+import com.serhohuk.facedetector.system.AppSettings
 import com.serhohuk.facedetector.ui.theme.FaceDetectionTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -350,7 +351,7 @@ class CameraDetectionFragment : Fragment() {
                             )
                         }
                         lifecycleScope.launch(Dispatchers.IO) {
-                            val resultBitmap = requireActivity().drawDetectionResult(bitmap, boxes)
+                            val resultBitmap = requireActivity().drawDetectionResult(bitmap, boxes, AppSettings.default)
                             requireActivity().saveImage(resultBitmap)
                         }
 

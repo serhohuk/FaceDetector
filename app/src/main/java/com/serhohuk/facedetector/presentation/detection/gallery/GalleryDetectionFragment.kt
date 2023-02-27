@@ -101,7 +101,7 @@ class GalleryDetectionFragment : Fragment() {
                         }
                         lifecycleScope.launch(Dispatchers.IO) {
                             val resultBitmap =
-                                requireActivity().drawDetectionResult(scaledBitmap, boxes)
+                                requireActivity().drawDetectionResult(scaledBitmap, boxes, viewModel.getAppSettings())
                             val file =
                                 File(requireContext().externalCacheDir.toString() + File.separator + "IMG_${System.currentTimeMillis()}.jpg")
                             val os: OutputStream = BufferedOutputStream(FileOutputStream(file))

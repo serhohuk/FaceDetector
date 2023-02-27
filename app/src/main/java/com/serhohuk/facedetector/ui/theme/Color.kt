@@ -10,4 +10,5 @@ data class AppColors(
 ) {
     val background get() = colors.background
     val surface get() = colors.surface
+    val inverseSurface get() = colors.inverseSurface
 }
