@@ -52,7 +52,6 @@ import com.serhohuk.facedetector.ui.theme.appShapes
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.internal.closeQuietly
 import java.io.*
 
@@ -80,41 +79,42 @@ class GalleryDetectionFragment : Fragment() {
                         uri
                     )
                 } else {
-                    val source = ImageDecoder.createSource(requireContext().contentResolver, uri)
+                    val source =
+                        ImageDecoder.createSource(requireContext().contentResolver, uri)
                     ImageDecoder.decodeBitmap(source)
                 }
                 val scaledBitmap = requireActivity().scaleBitmap(bitmap)
 
                 faceDetector.process(scaledBitmap, 0)
                     .addOnSuccessListener {
-                        val boxes = mutableListOf<FaceRect>()
-                        for (face in it) {
-                            boxes.add(
-                                FaceRect(
-                                    face.trackingId.toString(),
-                                    face.smilingProbability?.round(2).toString(),
-                                    face.leftEyeOpenProbability?.round(2).toString(),
-                                    face.leftEyeOpenProbability?.round(2).toString(),
-                                    face.boundingBox
-                                )
-                            )
-                        }
                         lifecycleScope.launch(Dispatchers.IO) {
-                            val resultBitmap =
-                                requireActivity().drawDetectionResult(scaledBitmap, boxes, viewModel.getAppSettings())
-                            val file =
-                                File(requireContext().externalCacheDir.toString() + File.separator + "IMG_${System.currentTimeMillis()}.jpg")
-                            val os: OutputStream = BufferedOutputStream(FileOutputStream(file))
-                            resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
-                            os.close()
-                            withContext(Dispatchers.Main) {
-                                viewModel.setPhotoSelected(file.path, false)
-                                viewModel.imagePath = file.path
+                            val boxes = mutableListOf<FaceRect>()
+                            for (face in it) {
+                                boxes.add(
+                                    FaceRect(
+                                        face.trackingId.toString(),
+                                        face.smilingProbability?.round(2).toString(),
+                                        face.leftEyeOpenProbability?.round(2).toString(),
+                                        face.leftEyeOpenProbability?.round(2).toString(),
+                                        face.boundingBox
+                                    )
+                                )
                             }
+                            val resultBitmap =
+                                requireActivity().drawDetectionResult(
+                                    scaledBitmap,
+                                    boxes,
+                                    viewModel.getAppSettings()
+                                )
+                            val file =
+                                File(requireContext().externalCacheDir.toString() + File.separator + "IMG_${System.currentTimeMillis()}.png")
+                            val os: OutputStream = BufferedOutputStream(FileOutputStream(file))
+                            resultBitmap.compress(Bitmap.CompressFormat.PNG, 70, os)
+                            os.close()
+                            viewModel.setPhotoSelected(file.path, SavingState.NOT_SAVED)
+                            viewModel.imagePath = file.path
                         }
-
-                    }
-                    .addOnCompleteListener {
+                    }.addOnCompleteListener {
                         faceDetector.closeQuietly()
                     }
             } else {
@@ -140,9 +140,12 @@ class GalleryDetectionFragment : Fragment() {
                     requireActivity().supportFragmentManager.popBackStack()
                 },
                 onSaveClick = {
-                    val bitmap = BitmapFactory.decodeFile(viewModel.imagePath)
-                    requireActivity().saveImage(bitmap)
-                    viewModel.setPhotoSelected(viewModel.imagePath, true)
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        viewModel.setPhotoSelected(viewModel.imagePath, SavingState.SAVING)
+                        val bitmap = BitmapFactory.decodeFile(viewModel.imagePath)
+                        requireActivity().saveImage(bitmap)
+                        viewModel.setPhotoSelected(viewModel.imagePath, SavingState.SAVED)
+                    }
                 },
                 onShareClick = {
                     startFileShareIntent(viewModel.imagePath)
@@ -291,26 +294,40 @@ private fun GalleryDetectionScreen(
                         Button(
                             modifier = Modifier.weight(1f),
                             onClick = { onSaveClick() },
-                            enabled = !uiState.saved
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.appColors.colors.primary),
+                            shape = MaterialTheme.appShapes.buttonShape,
+                            enabled = uiState.savingState == SavingState.NOT_SAVED
                         ) {
-                            if (uiState.saved) {
-                                Icon(
-                                    imageVector = Icons.Filled.Done,
-                                    contentDescription = null,
-                                    tint = Color.White
-                                )
-                            } else {
-                                Text(
-                                    text = stringResource(id = R.string.save_image),
-                                    color = Color.White,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                            when (uiState.savingState) {
+                                SavingState.SAVED -> {
+                                    Icon(
+                                        imageVector = Icons.Filled.Done,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                }
+                                SavingState.SAVING -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.appColors.colors.primary
+                                    )
+                                }
+                                else -> {
+                                    Text(
+                                        text = stringResource(id = R.string.save_image),
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
                         }
                         Spacer(Modifier.width(16.dp))
                         Button(
                             modifier = Modifier.weight(1f),
-                            onClick = { onShareClick() }) {
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.appColors.colors.primary),
+                            shape = MaterialTheme.appShapes.buttonShape,
+                            onClick = { onShareClick() }
+                        ) {
                             Text(
                                 text = stringResource(id = R.string.share_image),
                                 color = Color.White,
@@ -329,7 +346,7 @@ private fun GalleryDetectionScreen(
 fun GalleryDetectionScreenPreview() {
     FaceDetectionTheme {
         GalleryDetectionScreen(
-            uiState = GalleryDetectionUIState.Success("", false),
+            uiState = GalleryDetectionUIState.Success("", SavingState.NOT_SAVED),
             onBackClick = {},
             onSelectImageClick = {},
             onSaveClick = {},

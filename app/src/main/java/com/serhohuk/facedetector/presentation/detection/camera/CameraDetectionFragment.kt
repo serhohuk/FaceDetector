@@ -19,7 +19,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.sharp.Lens
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,16 +53,22 @@ import com.serhohuk.facedetector.detection.FaceRect
 import com.serhohuk.facedetector.extensions.drawDetectionResult
 import com.serhohuk.facedetector.extensions.round
 import com.serhohuk.facedetector.extensions.saveImage
-import com.serhohuk.facedetector.system.AppSettings
+import com.serhohuk.facedetector.system.PreferencesManager
 import com.serhohuk.facedetector.ui.theme.FaceDetectionTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.ByteBuffer
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class CameraDetectionFragment : Fragment() {
+
+    @Inject
+    lateinit var preferencesManager: PreferencesManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -137,7 +146,7 @@ class CameraDetectionFragment : Fragment() {
                 val left =
                     if (needToMirror) size.width - face.boundingBox.right.toFloat() else face.boundingBox.left.toFloat()
                 drawRect(
-                    color = Color.Red, style = Stroke(2.dp.toPx()),
+                    color = Color(preferencesManager.frameColor), style = Stroke(2.dp.toPx()),
                     topLeft = Offset(left, face.boundingBox.top.toFloat()),
                     size = Size(
                         face.boundingBox.width().toFloat(),
@@ -325,43 +334,51 @@ class CameraDetectionFragment : Fragment() {
 
         val faceDetector = FaceDetection.getClient(highAccuracyOpts)
 
-        imageCapture.takePicture(executor,  object : ImageCapture.OnImageCapturedCallback() {
-            override fun onError(exception: ImageCaptureException) {
-                Log.e("kilo", "Take photo error:", exception)
-                onError(exception)
-            }
+        imageCapture.takePicture(
+            executor,
+            @ExperimentalGetImage object : ImageCapture.OnImageCapturedCallback() {
+                override fun onError(exception: ImageCaptureException) {
+                    Log.e("kilo", "Take photo error:", exception)
+                    onError(exception)
+                }
 
-            override fun onCaptureSuccess(image: ImageProxy) {
-                val bitmap = imageProxyToBitmap(image)
-                val inputImage =
-                    InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    val bitmap = imageProxyToBitmap(image)
+                    val inputImage =
+                        InputImage.fromMediaImage(image.image!!, image.imageInfo.rotationDegrees)
 
-                faceDetector.process(inputImage)
-                    .addOnSuccessListener {
-                        val boxes = mutableListOf<FaceRect>()
-                        for (face in it) {
-                            boxes.add(
-                                FaceRect(
-                                    face.trackingId.toString(),
-                                    face.smilingProbability?.round(2).toString(),
-                                    face.leftEyeOpenProbability?.round(2).toString(),
-                                    face.leftEyeOpenProbability?.round(2).toString(),
-                                    face.boundingBox
+                    faceDetector.process(inputImage)
+                        .addOnSuccessListener {
+                            val boxes = mutableListOf<FaceRect>()
+                            for (face in it) {
+                                boxes.add(
+                                    FaceRect(
+                                        face.trackingId.toString(),
+                                        face.smilingProbability?.round(2).toString(),
+                                        face.leftEyeOpenProbability?.round(2).toString(),
+                                        face.leftEyeOpenProbability?.round(2).toString(),
+                                        face.boundingBox
+                                    )
                                 )
-                            )
-                        }
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            val resultBitmap = requireActivity().drawDetectionResult(bitmap, boxes, AppSettings.default)
-                            requireActivity().saveImage(resultBitmap)
-                        }
+                            }
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                if (isAdded) {
+                                    val resultBitmap = requireActivity().drawDetectionResult(
+                                        bitmap,
+                                        boxes,
+                                        preferencesManager.settings
+                                    )
+                                    requireActivity().saveImage(resultBitmap)
+                                }
+                            }
 
-                    }
-                    .addOnCompleteListener {
-                        image.close()
-                    }
-                super.onCaptureSuccess(image)
-            }
-        })
+                        }
+                        .addOnCompleteListener {
+                            image.close()
+                        }
+                    super.onCaptureSuccess(image)
+                }
+            })
     }
 
     private fun imageProxyToBitmap(image: ImageProxy): Bitmap {

@@ -20,12 +20,12 @@ class GalleryDetectionViewModel @Inject constructor(
 
     var imagePath = ""
 
-    fun setPhotoSelected(uri: String, saved: Boolean) {
-        _uiState.value = GalleryDetectionUIState.Success(uri, saved)
+    fun setPhotoSelected(uri: String, state: SavingState) {
+        _uiState.postValue(GalleryDetectionUIState.Success(uri, state))
     }
 
     fun setIsLoading() {
-        _uiState.value = GalleryDetectionUIState.Loading
+        _uiState.postValue(GalleryDetectionUIState.Loading)
     }
 
     fun getAppSettings() = preferencesManager.settings

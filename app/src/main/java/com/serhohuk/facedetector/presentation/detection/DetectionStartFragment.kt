@@ -42,7 +42,7 @@ import javax.inject.Inject
 class DetectionStartFragment : Fragment() {
 
     @Inject
-    lateinit var router : AppRouter
+    lateinit var router: AppRouter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,7 +63,7 @@ class DetectionStartFragment : Fragment() {
                         }
                     },
                     onGalleryButtonClick = {
-                        if (permissionGranted()) {
+                        if (galleryPermissionGranted()) {
                             router.navigateToGalleryRecognitionScreen(
                                 requireActivity().supportFragmentManager
                             )
@@ -95,6 +95,14 @@ class DetectionStartFragment : Fragment() {
                 ContextCompat.checkSelfPermission(
                     requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun galleryPermissionGranted() = if (Build.VERSION.SDK_INT >= Q) {
+        true
+    } else {
+        ContextCompat.checkSelfPermission(
+            requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onRequestPermissionsResult(

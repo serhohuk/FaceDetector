@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 class AppShapes(
     val imageShape: CornerBasedShape,
     val bigButtonShape: CornerBasedShape,
+    val buttonShape: CornerBasedShape,
     val dialogShape: CornerBasedShape
 )
 
@@ -18,7 +19,8 @@ internal val LocalShapes = staticCompositionLocalOf {
     AppShapes(
         imageShape = RoundedCornerShape(8.dp),
         bigButtonShape = RoundedCornerShape(16.dp),
-        dialogShape = RoundedCornerShape(24.dp)
+        dialogShape = RoundedCornerShape(24.dp),
+        buttonShape = RoundedCornerShape(8.dp)
     )
 }
 
