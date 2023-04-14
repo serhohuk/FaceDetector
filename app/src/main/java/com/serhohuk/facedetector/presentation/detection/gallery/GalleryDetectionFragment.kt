@@ -41,7 +41,7 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.serhohuk.facedetector.BuildConfig
 import com.serhohuk.facedetector.R
-import com.serhohuk.facedetector.detection.FaceRect
+import com.serhohuk.facedetector.system.FaceRect
 import com.serhohuk.facedetector.extensions.drawDetectionResult
 import com.serhohuk.facedetector.extensions.round
 import com.serhohuk.facedetector.extensions.saveImage

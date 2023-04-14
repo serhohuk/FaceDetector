@@ -5,7 +5,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.serhohuk.facedetector.R
-import com.serhohuk.facedetector.adapter.NavigationAdapter
+import com.serhohuk.facedetector.presentation.adapter.NavigationAdapter
 import com.serhohuk.facedetector.databinding.FragmentMainBinding
 import com.serhohuk.facedetector.presentation.detection.DetectionStartFragment
 import com.serhohuk.facedetector.presentation.settings.SettingsFragment

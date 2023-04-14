@@ -1,4 +1,4 @@
-package com.serhohuk.facedetector.adapter
+package com.serhohuk.facedetector.presentation.adapter
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter

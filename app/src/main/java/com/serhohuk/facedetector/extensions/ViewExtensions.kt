@@ -9,7 +9,7 @@ import android.provider.MediaStore
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.serhohuk.facedetector.R
-import com.serhohuk.facedetector.detection.FaceRect
+import com.serhohuk.facedetector.system.FaceRect
 import com.serhohuk.facedetector.system.AppSettings
 import java.io.File
 import java.io.FileOutputStream

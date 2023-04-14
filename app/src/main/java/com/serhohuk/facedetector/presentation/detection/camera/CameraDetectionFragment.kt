@@ -48,8 +48,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.serhohuk.facedetector.detection.FaceDetectorProcessor
-import com.serhohuk.facedetector.detection.FaceRect
+import com.serhohuk.facedetector.system.FaceDetectorProcessor
+import com.serhohuk.facedetector.system.FaceRect
 import com.serhohuk.facedetector.extensions.drawDetectionResult
 import com.serhohuk.facedetector.extensions.round
 import com.serhohuk.facedetector.extensions.saveImage

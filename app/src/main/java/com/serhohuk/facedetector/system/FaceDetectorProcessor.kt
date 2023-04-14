@@ -1,4 +1,4 @@
-package com.serhohuk.facedetector.detection
+package com.serhohuk.facedetector.system
 
 import android.annotation.SuppressLint
 import android.util.Log

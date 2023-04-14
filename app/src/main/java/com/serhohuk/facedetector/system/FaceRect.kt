@@ -1,4 +1,4 @@
-package com.serhohuk.facedetector.detection
+package com.serhohuk.facedetector.system
 
 import android.graphics.Rect
 
